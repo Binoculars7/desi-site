@@ -1,0 +1,120 @@
+.profile-modal {
+    width: 704px;
+    height: 578px;
+    background-color: #1c1c1e;
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+  }
+  
+  .profile-modal-overlay {
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-header h2 {
+    font-size: 24px;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .profile-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+  }
+  
+  .profile-details h3 {
+    margin: 0;
+    font-size: 20px;
+  }
+  
+  .profile-details p {
+    margin: 0;
+    font-size: 14px;
+    color: #a0a0a0;
+  }
+  
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  
+  .tab {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
+  .tab.active {
+    color: #fff;
+    background: linear-gradient(317deg, #5865F2, #404EED);
+    border-radius: 20px;
+  }
+  
+  .contacts {
+    margin-bottom: 20px;
+  }
+  
+  .contact-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .discord-button {
+    background: #5865F2;
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .refresh-button {
+    background: none;
+    border: none;
+    color: #ff0000;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .stake-account {
+    margin-bottom: 20px;
+  }
+  
+  .stake-account input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #2c2c2e;
+    color: #fff;
+  }
+
