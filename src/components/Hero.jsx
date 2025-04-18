@@ -1,14 +1,8 @@
-import React, { useState } from 'react';
+import React from "react";
 import styles from "../style";
 import backgroundImg from "./backgorund.png"; // Replace with your actual background image path
-import ProfileModal from './ProfileModal'; // Import ProfileModal
 
 const Hero = () => {
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // State for ProfileModal
-  
-  const openProfileModal = () => setIsProfileModalOpen(true); // Function to open ProfileModal
-  const closeProfileModal = () => setIsProfileModalOpen(false); // Function to close ProfileModal
-  
   const heroStyle = {
     backgroundImage: `url(${backgroundImg})`,
     backgroundSize: "cover",
@@ -23,14 +17,11 @@ const Hero = () => {
     textAlign: "center", // Center text horizontally
   };
 
-  
   const handleProofClick = () => {
     window.location.href = "/proof";
   };
 
   return (
-    <>
-    
     <section id="home" style={heroStyle}>
       <div
         className={`flex md:flex-row flex-col ${styles.paddingY} text-center`}
@@ -45,45 +36,46 @@ const Hero = () => {
             </h1>
           </div>
           <p className={`${styles.paragraph} max-w-[470px] mt-5 mx-auto`}>
-            Explore the realm of VIP Rewards from DesiGamblers!
+            Explore the realm of VIP Rewards from DesiGamblers!``
           </p>
           <p className={`${styles.paragraph} max-w-[5000px] mt-5 mx-auto`}>
             Compete in Leaderboards, try your luck in Exclusive Raffles, join
             Giveaways & more!
           </p>
-          <div className="flex gap-4 flex-col md:xl:flex-row items-center justify-center mx-auto">
-            
           <button
-            className="rounded-full mt-8 text-white py-2 px-6 mt-5 mx-auto"
-            style={{ background: "linear-gradient(45deg, #000439, #000A83)" }}
+            className="rounded-full mt-8 text-white py-2 px-6 mt-5 mx-auto transition-all duration-300 flex items-center justify-center group"
+            style={{
+              background: "linear-gradient(45deg, #ffffff, #d9d9d9)",
+              color: "#000",
+              overflow: "hidden",
+              position: "relative",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background =
+                "linear-gradient(45deg, #000439, #000A83)";
+              e.target.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background =
+                "linear-gradient(45deg, #ffffff, #d9d9d9)";
+              e.target.style.color = "#000";
+            }}
             onClick={handleProofClick}
           >
             ARE WE LEGIT?
+            <span
+              className="ml-2 transition-transform duration-300 group-hover:translate-x-2"
+              style={{
+                display: "inline-block",
+                transform: "translateX(0)",
+              }}
+            >
+              →
+            </span>
           </button>
-          {/* <button
-            className="rounded-full mt-8 text-white py-2 px-6 mx-auto"
-            style={{
-              backgroundImage: "linear-gradient(45deg, #000439, #000A83)",
-            }}
-            onClick={openProfileModal}
-          >
-            Claim 35$
-          </button> */}
-          <button
-            className='rounded-full mt-8 text-white py-2 px-6 mt-5 mx-auto uppercase'
-            style={{
-              backgroundImage: 'linear-gradient(45deg, #000439, #000A83)',
-            }}
-            onClick={openProfileModal}
-          >
-            Claim 35$
-          </button>
-            </div>  
         </div>
       </div>
     </section>
-      <ProfileModal isOpen={isProfileModalOpen} onRequestClose={closeProfileModal} /> {/* Add ProfileModal */}
-      </>
   );
 };
 

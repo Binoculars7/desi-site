@@ -7,7 +7,9 @@ const Footer = () => {
     <section
       className={`flex justify-center items-center sm:py-16 py-6 flex-col`}
     >
-      <div className={`flex items-center justify-center gap-4 xl:${styles.flexStart} md:flex-row flex-col mb-8 w-full`}>
+      <div
+        className={`flex items-center justify-center gap-4 xl:${styles.flexStart} md:flex-row flex-col mb-8 w-full`}
+      >
         <div className="flex-1 flex flex-col justify-center md:justify-between xl:justify-start mr-10">
           <div className="flex f-d f-b xl:justify-between sm:md:xl:flex-row uppercase gap-8">
             <img
@@ -28,7 +30,7 @@ const Footer = () => {
                   Leaderboard
                 </a>
               </div>
-              
+
               <div className="flex flex-col items-start justify-start gap-2 text-white ml-16 md:ml-8 xl:ml-0">
                 <p className="font-bold">Info</p>
                 <a href="/tos" className="text-gray-400 ">
@@ -38,9 +40,8 @@ const Footer = () => {
                   Privacy Policy
                 </a>
               </div>
-            </div>    
-            
-            
+            </div>
+
             <div className="w-[80vw] f-s xl:w-28 flex flex-wrap items-center md:xl:items-start justify-between gap-4">
               <a
                 href="https://discord.gg/desigamblers"
@@ -102,7 +103,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://t.me/desigamblerstg"
+                href="https://t.me/desigamblers"
                 className="flex w-12 h-8 px-4 py-2 justify-center items-center rounded-[82px] text-white/50 bg-[#FFFFFF08] transition-all duration-200 ease-linear hover:bg-[#9dedf0] hover:text-gray-900 "
               >
                 <svg
@@ -110,8 +111,9 @@ const Footer = () => {
                   width={16}
                   height={16}
                   fill="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <path d="M14.824 4.287a5.744 5.744 0 0 1-1.632.463 2.903 2.903 0 0 0 1.246-1.623 5.542 5.542 0 0 1-1.796.711 2.793 2.793 0 0 0-2.07-.929c-1.568 0-2.83 1.32-2.83 2.937 0 .233.018.456.065.67-2.355-.12-4.44-1.29-5.84-3.072-.243.44-.387.943-.387 1.484a2.97 2.97 0 0 0 1.258 2.44 2.723 2.723 0 0 1-1.28-.361v.032c0 1.427.983 2.612 2.27 2.885-.23.065-.482.097-.742.097a2.42 2.42 0 0 1-.537-.05c.367 1.162 1.409 2.017 2.647 2.045a5.566 5.566 0 0 1-4.19 1.212 7.773 7.773 0 0 0 4.346 1.317c5.213 0 8.063-4.475 8.063-8.354 0-.13-.005-.256-.01-.38a5.767 5.767 0 0 0 1.419-1.524Z" />
+                  <path d="M12 0C5.371 0 0 5.371 0 12c0 6.627 5.371 12 12 12s12-5.373 12-12c0-6.629-5.371-12-12-12Zm5.316 7.242-1.578 7.453c-.12.532-.432.661-.876.411l-2.426-1.791-1.171 1.128c-.129.129-.237.237-.486.237l.174-2.474 4.51-4.074c.195-.174-.043-.27-.3-.096L8.68 12.335l-2.382-.744c-.517-.162-.528-.517.108-.765l9.255-3.558c.432-.162.81.096.655.774Z" />
                 </svg>
               </a>
               <a
@@ -161,7 +163,7 @@ const Footer = () => {
           <p className="text-sm leading-[130%] text-gray-300 mt-2 md:xl:mt-4">
             If you're not a top wager, don't worry! You still have the chance to
             earn rewards from our code. Right now we are giving away a total of
-            $1,000 randomly to code desi2023 users who wager over $1,000 each
+            $20,000 randomly to code desi2023 users who wager over $20,000 each
             month.
           </p>
         </div>
@@ -171,11 +173,11 @@ const Footer = () => {
           </h3>
           <p className="text-sm leading-[130%] text-gray-300 mt-2 md:xl:mt-4">
             If you are a top five player on the leaderboard we ask that you join
-            our discord server to claim your prize. However,
-            if you are unable to do this your prize will be sent to your account
-            10 days after the leaderboard is concluded. If you are not a top
-            five wager you will receive your prize directly to your stake
-            account each month after the leaderboard ends.
+            our discord server to claim your prize. However, if you are unable
+            to do this your prize will be sent to your account 10 days after the
+            leaderboard is concluded. If you are not a top five wager you will
+            receive your prize directly to your stake account each month after
+            the leaderboard ends.
           </p>
         </div>
       </div>
@@ -195,6 +197,18 @@ const Footer = () => {
           We do not assume responsibility for any outcomes from gambling at
           casinos and betting sites linked or promoted on our website(s). As a
           player, you are accountable for your own bets.
+        </p>
+
+        <p
+          className={`${styles.paragraph} mt-2 w-auto text-left border p-2 text-xs rounded-lg flex items-center bg-gray`}
+        >
+          Disclaimer: The content in this video is strictly not intended for the
+          Indian region. Laws vary by state and country, and it is your
+          responsibility to ensure compliance with your local regulations before
+          engaging in any activities. This video does not promote any gambling
+          platform, game, or website. The information provided is purely for
+          entertainment and informational purposes and should not be interpreted
+          as financial, investment, or legal advice
         </p>
 
         <h1 className="text-transparent">‎</h1>

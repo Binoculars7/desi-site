@@ -6,7 +6,7 @@ import { logo, vip } from "../assets";
 
 const Billing = () => {
   const handleJoinNowClick = () => {
-    window.open("https://stake.com/?c=Stratig", "_blank");
+    window.open("https://stake.pet/?c=Desi", "_blank");
   };
 
   const handleCodeClick = () => {
@@ -94,7 +94,7 @@ const Billing = () => {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              $1,000
+              $30,000
             </span>{" "}
             Leaderboard!
           </p>

@@ -32,11 +32,11 @@ const Code = () => {
               </g>
             </svg>
           </span>{" "}
-          to get free <span className="code-highlight"> $35</span> bonus!
+          to get free <span className="code-highlight"> $100</span> bonus!
         </h2>
       </div>
       <div className={`${styles.flexCenter} sm:ml-10 ml-0`}>
-        <a href="https://stake.com/?c=Stratig" target="_blank">
+        <a href="https://stake.pet/?c=Desi" target="_blank">
           {" "}
           <Button />
         </a>

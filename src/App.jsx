@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import {
   Billing,
   Business,
@@ -12,21 +12,41 @@ import {
   Navbar,
   Stats,
   Testimonials,
-  Ytvideo
-} from './components';
-import Proof from './components/Proof'; // Import the new Proof component
-import styles from './style';
+  Ytvideo,
+} from "./components";
+import Proof from "./components/Proof";
+import DisclaimerModal from "./components/DisclaimerModal"; // 👈 NEW
+
+import styles from "./style";
+
+
+
+import DiscordCallback from "./components/DiscordCallback"; // <-- Your new callback handler
+
+
+
 
 const App = () => {
   return (
     <Router>
-      <div className='bg-[#1b1e2c] w-full overflow-hidden'>
+      <DisclaimerModal /> {/* 👈 NEW */}
+      <div className="bg-[#1b1e2c] w-full overflow-hidden">
         <div className={`${styles.paddingX} ${styles.flexCenter}`}>
           <div className={`${styles.boxWidth}`}>
             <Navbar />
           </div>
         </div>
+
         <Routes>
+
+
+
+        <Route path="/auth/discord/callback" element={<DiscordCallback />} />
+
+
+
+
+
           <Route
             path="/"
             element={
@@ -36,7 +56,9 @@ const App = () => {
                     <Hero />
                   </div>
                 </div>
-                <div className={`bg-primary ${styles.paddingX} ${styles.flexStart}`}>
+                <div
+                  className={`bg-primary ${styles.paddingX} ${styles.flexStart}`}
+                >
                   <div className={`${styles.boxWidth}`}>
                     <Stats />
                     <Code />
@@ -46,24 +68,27 @@ const App = () => {
                     <Testimonials />
                     <Ytvideo />
                     <CTA />
-                  </div>     
+                  </div>
                 </div>
-                <div className={`bg-[#1c1e30] ${styles.paddingX} ${styles.flexCenter}`}>
+                <div
+                  className={`bg-[#1c1e30] ${styles.paddingX} ${styles.flexCenter}`}
+                >
                   <div className={`${styles.boxWidth} ${styles.flexCenter}`}>
-                    <Footer/>     
-                  </div>  
-                </div> 
+                    <Footer />
+                  </div>
+                </div>
               </>
             }
           />
-          <Route path="/proof" element={
-            <div className='w-[80vw] m-auto'>
-            <Proof />
-            <Footer />
-            </div>
-
-          } 
-            />
+          <Route
+            path="/proof"
+            element={
+              <div className="w-[80vw] m-auto">
+                <Proof />
+                <Footer />
+              </div>
+            }
+          />
         </Routes>
       </div>
     </Router>

@@ -5,28 +5,26 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Utility function to get stored users from local storage
+// Firebase
+import { db, collection, addDoc } from "./firebase"; // 👈 Import Firestore
+
 function getStoredUsers() {
   return JSON.parse(localStorage.getItem("registeredUsers")) || {};
 }
 
-// Utility function to save users to local storage
 function saveStoredUsers(users) {
   localStorage.setItem("registeredUsers", JSON.stringify(users));
 }
 
-// Utility function to check if a user has already registered
 function isUserAlreadyRegistered() {
   return localStorage.getItem("userRegistered") === "true";
 }
 
-// Utility function to check if username is already registered
 function isUsernameOrEmailAlreadyRegistered(username, email) {
   const registeredUsers = getStoredUsers();
   return registeredUsers[username] || registeredUsers[email];
 }
 
-// Utility function to mark user as registered
 function markUserAsRegistered() {
   localStorage.setItem("userRegistered", "true");
 }
@@ -41,19 +39,16 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"; // Disable scrolling
-    } else {
-      document.body.style.overflow = "auto"; // Enable scrolling
-    }
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
     return () => {
-      document.body.style.overflow = "auto"; // Clean up on unmount
+      document.body.style.overflow = "auto";
     };
   }, [isOpen]);
 
   useEffect(() => {
     setAnimation(true);
-    const timer = setTimeout(() => setAnimation(false), 500); // Match duration with CSS transition
+    const timer = setTimeout(() => setAnimation(false), 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -84,11 +79,6 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
       toast("You can only apply for one account", {
         position: "bottom-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
         theme: "dark",
       });
       return;
@@ -97,26 +87,26 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
     setFormError("");
 
     try {
+      // Firestore Save
+      await addDoc(collection(db, "users"), {
+        ...formData,
+        timestamp: new Date(),
+      });
+
+      // API Call
       const response = await axios.get(
         `https://api.desigamblers.top/api/submit/${formData.username}`,
         {
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        },
+          headers: { "Access-Control-Allow-Origin": "*" },
+        }
       );
+
       toast(`${response.data}`, {
         position: "bottom-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
         theme: "dark",
       });
 
-      // Mark user as registered
       let registeredUsers = getStoredUsers();
       registeredUsers[formData.username] = true;
       saveStoredUsers(registeredUsers);
@@ -124,15 +114,10 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
 
       onRequestClose();
     } catch (error) {
-      console.error("Error submitting claim profile", error);
+      console.error("Submission Error:", error);
       toast("Error submitting claim profile", {
         position: "bottom-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
         theme: "dark",
       });
       setFormError("Error submitting claim profile");
@@ -148,9 +133,8 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
           onRequestClose={onRequestClose}
           style={{
             content: {
-              width: "80vw",
+              width: "60vw",
               maxWidth: "400px",
-              height: "auto",
               margin: "auto",
               borderRadius: "10px",
               background: "linear-gradient(317deg, #000439, #000108)",
@@ -167,31 +151,18 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
             <div
               style={{
                 backgroundImage:
-                  'url("https://submit.desigamblers.top/cdn/standard.gif")',
+                  'url("https://api.desigamblers.top/cdn/standard.gif")',
                 backgroundSize: "cover",
-                backgroundPosition: "center",
                 height: "150px",
               }}
-            ></div>
+            />
             <div
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-                cursor: "pointer",
-              }}
               onClick={onRequestClose}
+              style={{ position: "absolute", top: "10px", right: "10px", cursor: "pointer" }}
             >
               <Close style={{ color: "white" }} />
             </div>
-            <div
-              style={{
-                padding: "20px",
-                marginTop: "-70px",
-                zIndex: 1,
-                position: "relative",
-              }}
-            >
+            <div style={{ padding: "20px", marginTop: "-70px", zIndex: 1 }}>
               <div
                 style={{
                   transition: "opacity 0.5s ease, transform 0.5s ease",
@@ -201,14 +172,10 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
               >
                 <div style={{ textAlign: "center" }}>
                   <h1 className="text-transparent">‎</h1>
-                  <h1 className="text-transparent">‎</h1>
 
-                  <h1 className="text-transparent">‎</h1>
-                  <h1 className="text-transparent">‎</h1>
-                  <h1 className="text-transparent">‎</h1>
-                  <h1 className="text-transparent">‎</h1>
+                  {/* Username Input */}
                   <div style={{ marginBottom: "10px", textAlign: "left" }}>
-                    <h4 style={{ marginBottom: "5px" }}>Username</h4>
+                    <h4>Username</h4>
                     <input
                       type="text"
                       name="username"
@@ -220,28 +187,18 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                         borderRadius: "10px",
                         color: "white",
                         width: "100%",
+                        textAlign: "center",
                         border: "none",
                         outline: "none",
-                        textAlign: "center",
                       }}
                       placeholder="Enter your username"
                     />
                   </div>
+
+                  {/* Under Desi */}
                   <div style={{ marginBottom: "10px", textAlign: "left" }}>
-                    <h4 style={{ marginBottom: "5px" }}>
-                      Are you under "desi2023"?
-                    </h4>
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        backgroundColor: "#000000",
-                        padding: "5px 10px",
-                        borderRadius: "10px",
-                        color: "white",
-                      }}
-                    >
+                    <h4>Are you under "desi2023"?</h4>
+                    <label style={checkboxStyle}>
                       <input
                         type="checkbox"
                         name="underDesi"
@@ -252,21 +209,11 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                       <span>Yes</span>
                     </label>
                   </div>
+
+                  {/* Wagered */}
                   <div style={{ marginBottom: "10px", textAlign: "left" }}>
-                    <h4 style={{ marginBottom: "5px" }}>
-                      Have you deposited and wagered $35?
-                    </h4>
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        backgroundColor: "#000000",
-                        padding: "5px 10px",
-                        borderRadius: "10px",
-                        color: "white",
-                      }}
-                    >
+                    <h4>Have you deposited and wagered $100?</h4>
+                    <label style={checkboxStyle}>
                       <input
                         type="checkbox"
                         name="wagered"
@@ -277,6 +224,8 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                       <span>Yes</span>
                     </label>
                   </div>
+
+                  {/* Error + Submit */}
                   {formError && (
                     <p style={{ color: "red", textAlign: "center" }}>
                       {formError}
@@ -284,17 +233,7 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                   )}
                   <button
                     onClick={handleSubmit}
-                    style={{
-                      background: "#166D3B",
-                      color: "white",
-                      padding: "10px 20px",
-                      borderRadius: "10px",
-                      border: "none",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      marginTop: "10px",
-                      transition: "background 0.3s ease",
-                    }}
+                    style={submitButtonStyle}
                   >
                     Submit
                   </button>
@@ -306,6 +245,28 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
       </div>
     </>
   );
+};
+
+const checkboxStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  backgroundColor: "#000000",
+  padding: "5px 10px",
+  borderRadius: "10px",
+  color: "white",
+};
+
+const submitButtonStyle = {
+  background: "#166D3B",
+  color: "white",
+  padding: "10px 20px",
+  borderRadius: "10px",
+  border: "none",
+  cursor: "pointer",
+  fontSize: "14px",
+  marginTop: "10px",
+  transition: "background 0.3s ease",
 };
 
 export default ProfileModal;

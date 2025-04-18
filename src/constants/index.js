@@ -1,20 +1,20 @@
-import { 
-  people01, 
-  people02, 
-  people03, 
-  facebook, 
-  instagram, 
-  linkedin, 
-  twitter, 
-  airbnb, 
-  binance, 
-  coinbase, 
-  dropbox, 
-  send, 
-  shield, 
+import {
+  people01,
+  people02,
+  people03,
+  facebook,
+  instagram,
+  linkedin,
+  twitter,
+  airbnb,
+  binance,
+  coinbase,
+  dropbox,
+  send,
+  shield,
   gambleaware,
   ager,
-  star
+  star,
 } from "../assets";
 
 export const navLinks = [
@@ -47,9 +47,9 @@ export const features = [
   {
     id: "feature-2",
     icon: shield,
-    title: "Only to give 35$",
+    title: "Only to give $100",
     content:
-      "Desigamblers offers an unparalleled $35 welcome bonus to new players. This generous offer is the highest in the industry, allowing you to start your gaming journey with a significant boost. Sign up today and take advantage of this exclusive promotion!",
+      "Desigamblers offers an unparalleled $100 welcome bonus to new players. This generous offer is the highest in the industry, allowing you to start your gaming journey with a significant boost. Sign up today and take advantage of this exclusive promotion!",
   },
   {
     id: "feature-3",
@@ -108,15 +108,13 @@ export const stats = [
   },
 ];
 
-
-
 export const footerLinks = [
   {
     title: "Useful Links",
     links: [
       {
         name: "Stake",
-        link: "https://stake.com/?c=Stratig ",
+        link: "https://stake.pet/?c=Desi",
       },
       {
         name: "How it Works",
