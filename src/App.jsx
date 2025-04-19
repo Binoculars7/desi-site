@@ -44,7 +44,7 @@ const App = () => {
         <Route path="/auth/discord/callback" element={<DiscordCallback />} />
 
 
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/adminonly" element={<AdminPanel />} />
 
 
           <Route
