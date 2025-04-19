@@ -15,13 +15,13 @@ import {
   Ytvideo,
 } from "./components";
 import Proof from "./components/Proof";
-import DisclaimerModal from "./components/DisclaimerModal"; // 👈 NEW
+import DisclaimerModal from "./components/DisclaimerModal";
 
 import styles from "./style";
 import AdminPanel from "./components/AdminPanel";
 
 
-import DiscordCallback from "./components/DiscordCallback"; // <-- Your new callback handler
+import DiscordCallback from "./components/DiscordCallback"; 
 
 
 
@@ -29,7 +29,7 @@ import DiscordCallback from "./components/DiscordCallback"; // <-- Your new call
 const App = () => {
   return (
     <Router>
-      <DisclaimerModal /> {/* 👈 NEW */}
+      <DisclaimerModal /> {}
       <div className="bg-[#1b1e2c] w-full overflow-hidden">
         <div className={`${styles.paddingX} ${styles.flexCenter}`}>
           <div className={`${styles.boxWidth}`}>
