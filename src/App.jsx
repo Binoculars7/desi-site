@@ -18,7 +18,7 @@ import Proof from "./components/Proof";
 import DisclaimerModal from "./components/DisclaimerModal"; // 👈 NEW
 
 import styles from "./style";
-
+import AdminPanel from "./components/AdminPanel";
 
 
 import DiscordCallback from "./components/DiscordCallback"; // <-- Your new callback handler
@@ -44,7 +44,7 @@ const App = () => {
         <Route path="/auth/discord/callback" element={<DiscordCallback />} />
 
 
-
+        <Route path="/admin" element={<AdminPanel />} />
 
 
           <Route
