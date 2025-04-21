@@ -19,9 +19,11 @@ import DisclaimerModal from "./components/DisclaimerModal";
 
 import styles from "./style";
 import AdminPanel from "./components/AdminPanel";
+import LeaderBoard from "./components/LeaderBoard";
 
 
 import DiscordCallback from "./components/DiscordCallback"; 
+import { Leaderboard } from "@mui/icons-material";
 
 
 
@@ -45,6 +47,7 @@ const App = () => {
 
 
         <Route path="/adminonly" element={<AdminPanel />} />
+        <Route path="/leaderboard" element={<LeaderBoard />} />
 
 
           <Route

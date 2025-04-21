@@ -184,7 +184,7 @@ const handleLogout = () => {
             Proof
           </a>
           <a
-            href="#leaderboard"
+            href="/leaderboard"
             className={`px-4 py-2 rounded-full text-white ${isActive("/leaderboard") ? "text-[#4b8cff] shadow-lg shadow-black" : "bg-transparent text-white"} hover:text-[#4b8cff] hover:shadow-lg hover:shadow-black transition-colors duration-300`}
           >
             <FontAwesomeIcon icon={faTrophy} className="mr-2" />
