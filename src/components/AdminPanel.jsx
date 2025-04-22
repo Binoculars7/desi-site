@@ -1,8 +1,104 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Papa from "papaparse";
+import "./App.css"; // Ensure to import the CSS for styling and 3D effect
 
+// Admin Login Popup Component
+const AdminLogin = ({ onLoginSuccess }) => {
+  const [secretWord, setSecretWord] = useState("");
+  const [newSecretWord, setNewSecretWord] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isChangingSecret, setIsChangingSecret] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [currentSecretWord, setCurrentSecretWord] = useState("admin123"); // Use state for current secret word
+
+  // Handle login
+  const handleLogin = () => {
+    if (secretWord === currentSecretWord) {
+      setIsAuthenticated(true);
+      setErrorMessage("");
+      onLoginSuccess();
+    } else {
+      setErrorMessage("Incorrect secret word");
+    }
+  };
+
+  // Handle change of secret word
+  const handleChangeSecretWord = () => {
+    if (newSecretWord === secretWord && secretWord !== "") {
+      // Update the secret word in the state
+      setCurrentSecretWord(newSecretWord);
+      setSecretWord("");
+      setNewSecretWord("");
+      setIsChangingSecret(false);
+      setErrorMessage("");
+    } else {
+      setErrorMessage("Current secret word is incorrect or new secret word is empty");
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-popup">
+        <h2 className="popup-title">Admin Login</h2>
+
+        {/* Secret Word Input */}
+        {!isAuthenticated && !isChangingSecret && (
+          <>
+            <input
+              type="password"
+              placeholder="Enter Secret Word"
+              value={secretWord}
+              onChange={(e) => setSecretWord(e.target.value)}
+              className="input-field"
+            />
+            <button onClick={handleLogin} className="submit-btn">
+              Access
+            </button>
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+          </>
+        )}
+
+        {/* Change Secret Word Input */}
+        {isAuthenticated && !isChangingSecret && (
+          <button
+            onClick={() => setIsChangingSecret(true)}
+            className="submit-btn"
+          >
+            Change Secret Word
+          </button>
+        )}
+
+        {/* Change Secret Word */}
+        {isChangingSecret && (
+          <>
+            <input
+              type="password"
+              placeholder="Enter Current Secret Word"
+              value={secretWord}
+              onChange={(e) => setSecretWord(e.target.value)}
+              className="input-field"
+            />
+            <input
+              type="password"
+              placeholder="Enter New Secret Word"
+              value={newSecretWord}
+              onChange={(e) => setNewSecretWord(e.target.value)}
+              className="input-field"
+            />
+            <button onClick={handleChangeSecretWord} className="submit-btn">
+              Change Secret Word
+            </button>
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Main Admin Panel Component
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -10,27 +106,44 @@ const AdminPanel = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUsersAndClaims = async () => {
       try {
-        const usersCollection = collection(db, "users");
-        const usersSnapshot = await getDocs(usersCollection);
-        const userList = usersSnapshot.docs.map((doc) => ({
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const claimsSnapshot = await getDocs(collection(db, "claims"));
+
+        const usersList = usersSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setUsers(userList);
-        setFilteredUsers(userList);
+
+        const claimsList = claimsSnapshot.docs.map((doc) => doc.data());
+
+        const mergedData = usersList
+          .filter((user) => user.username && user.email) // Only include users with username AND email
+          .map((user) => {
+            const matchingClaim = claimsList.find(
+              (claim) => claim.discordUsername === user.username
+            );
+            return {
+              ...user,
+              customUsername: matchingClaim?.customUsername || "-",
+            };
+          });
+
+        setUsers(mergedData);
+        setFilteredUsers(mergedData);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchUsers();
+    fetchUsersAndClaims();
   }, []);
 
-  // Filter Logic
+  // Filter + Search Logic
   useEffect(() => {
     let result = [...users];
 
@@ -38,6 +151,10 @@ const AdminPanel = () => {
       result = result.filter((u) => u.email);
     } else if (filter === "withoutEmail") {
       result = result.filter((u) => !u.email);
+    } else if (filter === "claimed") {
+      result = result.filter((u) => u.customUsername !== "-");
+    } else if (filter === "unclaimed") {
+      result = result.filter((u) => u.customUsername === "-");
     }
 
     if (searchTerm.trim() !== "") {
@@ -50,7 +167,6 @@ const AdminPanel = () => {
     setCurrentPage(1);
   }, [filter, searchTerm, users]);
 
-  // Pagination Logic
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const indexOfLast = currentPage * usersPerPage;
   const indexOfFirst = indexOfLast - usersPerPage;
@@ -62,19 +178,27 @@ const AdminPanel = () => {
     }
   };
 
-  // Export to CSV
   const exportToCSV = () => {
     const csv = Papa.unparse(
-      filteredUsers.map(({ username, email }) => ({ username, email }))
+      filteredUsers.map(({ username, email, customUsername }) => ({
+        username,
+        email,
+        customUsername,
+        status: customUsername !== "-" ? "Claimed" : "Unclaimed",  // Add status
+      }))
     );
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "discord_users.csv");
+    link.setAttribute("download", "discord_users_with_custom_usernames.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
   };
 
   return (
@@ -88,71 +212,95 @@ const AdminPanel = () => {
         backdropFilter: "blur(8px)",
       }}
     >
-      <h2 style={{ marginBottom: "1rem", fontSize: "28px", textAlign: "center" }}>
-        👾 Admin Panel - Discord Users
-      </h2>
-
-      {/* Controls */}
-      <div style={{ marginBottom: "1rem", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "1rem" }}>
-        <div>
-          <button onClick={() => setFilter("all")} style={filterBtnStyle}>All</button>
-          <button onClick={() => setFilter("withEmail")} style={filterBtnStyle}>Discord Users</button>
-          <button onClick={() => setFilter("withoutEmail")} style={filterBtnStyle}>Claimed $100</button>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Search: discord username"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={searchInputStyle}
-        />
-
-        <button onClick={exportToCSV} style={exportBtnStyle}>
-          📁 Export CSV
-        </button>
-      </div>
-
-      {/* Table */}
-      {currentUsers.length > 0 ? (
-        <div style={{ overflowX: "auto" }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr style={headerRowStyle}>
-                <th style={headerStyle}>#</th>
-                <th style={headerStyle}>Username</th>
-                <th style={headerStyle}>Email</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentUsers.map((user, index) => (
-                <tr
-                  key={user.id}
-                  style={{ transition: "transform 0.2s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.01)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                  <td style={cellStyle}>{indexOfFirst + index + 1}</td>
-                  <td style={cellStyle}>{user.username}</td>
-                  <td style={cellStyle}>{user.email || "N/A"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {!isLoggedIn ? (
+        <AdminLogin onLoginSuccess={handleLoginSuccess} />
       ) : (
-        <p style={{ textAlign: "center", color: "#aaa" }}>No users found.</p>
-      )}
+        <>
+          <h2 style={{ marginBottom: "1rem", fontSize: "28px", textAlign: "center" }}>
+            👾 Admin Panel - Discord Users
+          </h2>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div style={{ marginTop: "1rem", textAlign: "center" }}>
-          <button onClick={() => handlePageChange(currentPage - 1)} style={paginationBtnStyle}>Prev</button>
-          <span style={{ margin: "0 1rem" }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button onClick={() => handlePageChange(currentPage + 1)} style={paginationBtnStyle}>Next</button>
-        </div>
+          {/* Controls */}
+          <div
+            style={{
+              marginBottom: "1rem",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+              gap: "1rem",
+            }}
+          >
+            <div>
+              <button onClick={() => setFilter("all")} style={filterBtnStyle}>All</button>
+              <button onClick={() => setFilter("claimed")} style={filterBtnStyle}>Claimed</button>
+              <button onClick={() => setFilter("unclaimed")} style={filterBtnStyle}>Unclaimed</button>
+            </div>
+
+            <input
+              type="text"
+              placeholder="Search: discord username"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={searchInputStyle}
+            />
+
+            <button onClick={exportToCSV} style={exportBtnStyle}>
+              📁 Export CSV
+            </button>
+          </div>
+
+          {/* Table */}
+          {currentUsers.length > 0 ? (
+            <div style={{ overflowX: "auto" }}>
+              <table style={tableStyle}>
+                <thead>
+                  <tr style={headerRowStyle}>
+                    <th style={headerStyle}>S/N</th>
+                    <th style={headerStyle}>Username</th>
+                    <th style={headerStyle}>Email</th>
+                    <th style={headerStyle}>Custom Username</th>
+                    <th style={headerStyle}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentUsers.map((user, index) => (
+                    <tr
+                      key={user.id}
+                      style={{ transition: "transform 0.2s" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.01)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                    >
+                      <td style={cellStyle}>{indexOfFirst + index + 1}</td>
+                      <td style={cellStyle}>{user.username}</td>
+                      <td style={cellStyle}>{user.email}</td>
+                      <td style={cellStyle}>{user.customUsername}</td>
+                      <td style={cellStyle}>
+                        {user.customUsername !== "-" ? (
+                          <span style={claimedBadgeStyle}>Claimed</span>
+                        ) : (
+                          <span style={unclaimedBadgeStyle}>Unclaimed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p style={{ textAlign: "center", color: "#aaa" }}>No users found.</p>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ marginTop: "1rem", textAlign: "center" }}>
+              <button onClick={() => handlePageChange(currentPage - 1)} style={paginationBtnStyle}>Prev</button>
+              <span style={{ margin: "0 1rem" }}>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button onClick={() => handlePageChange(currentPage + 1)} style={paginationBtnStyle}>Next</button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -223,10 +371,21 @@ const paginationBtnStyle = {
   margin: "0 6px",
   background: "#4facfe",
   border: "none",
-  borderRadius: "6px",
+  borderRadius: "8px",
   cursor: "pointer",
-  fontWeight: "bold",
-  color: "#000",
+  color: "#fff",
+};
+
+const claimedBadgeStyle = {
+  padding: "4px 8px",
+  background: "#38d9a9",
+  borderRadius: "5px",
+};
+
+const unclaimedBadgeStyle = {
+  padding: "4px 8px",
+  background: "#e74c3c",
+  borderRadius: "5px",
 };
 
 export default AdminPanel;

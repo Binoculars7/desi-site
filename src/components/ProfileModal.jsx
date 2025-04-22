@@ -4,10 +4,10 @@ import { Close } from "@mui/icons-material";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { db } from "./firebase"; // Adjust path as needed
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-// Firebase
-import { db, collection, addDoc } from "./firebase"; // 👈 Import Firestore
-
+// Utility functions
 function getStoredUsers() {
   return JSON.parse(localStorage.getItem("registeredUsers")) || {};
 }
@@ -16,20 +16,24 @@ function saveStoredUsers(users) {
   localStorage.setItem("registeredUsers", JSON.stringify(users));
 }
 
-function isUserAlreadyRegistered() {
-  return localStorage.getItem("userRegistered") === "true";
-}
-
-function isUsernameOrEmailAlreadyRegistered(username, email) {
+function isUserAlreadyRegistered(discordId) {
   const registeredUsers = getStoredUsers();
-  return registeredUsers[username] || registeredUsers[email];
+  return registeredUsers[discordId];
 }
 
-function markUserAsRegistered() {
+function isUsernameAlreadyRegistered(username) {
+  const registeredUsers = getStoredUsers();
+  return Object.values(registeredUsers).includes(username);
+}
+
+function markUserAsRegistered(discordId, username) {
+  const registeredUsers = getStoredUsers();
+  registeredUsers[discordId] = username;
+  saveStoredUsers(registeredUsers);
   localStorage.setItem("userRegistered", "true");
 }
 
-const ProfileModal = ({ isOpen, onRequestClose }) => {
+const ProfileModal = ({ isOpen, onRequestClose, discordUser }) => {
   const [animation, setAnimation] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -37,10 +41,15 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
     wagered: false,
   });
   const [formError, setFormError] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "auto";
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
     return () => {
       document.body.style.overflow = "auto";
     };
@@ -53,19 +62,16 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
   }, []);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
+    const { name, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : e.target.value,
     }));
   };
 
   const handleUsernameChange = (e) => {
     const value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "");
-    setFormData((prevData) => ({
-      ...prevData,
-      username: value,
-    }));
+    setFormData((prev) => ({ ...prev, username: value }));
   };
 
   const handleSubmit = async () => {
@@ -74,53 +80,49 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
       return;
     }
 
-    if (isUserAlreadyRegistered()) {
+    if (isUserAlreadyRegistered(discordUser?.id)) {
       setFormError("You can only apply for one account");
-      toast("You can only apply for one account", {
-        position: "bottom-right",
-        autoClose: 5000,
-        theme: "dark",
-      });
+      toast("You can only apply for one account", { theme: "dark" });
+      return;
+    }
+
+    if (isUsernameAlreadyRegistered(formData.username)) {
+      setFormError("This username is already taken.");
+      toast("This username is already taken.", { theme: "dark" });
       return;
     }
 
     setFormError("");
+    setLoading(true);
 
     try {
-      // Firestore Save
-      await addDoc(collection(db, "users"), {
-        ...formData,
-        timestamp: new Date(),
-      });
-
-      // API Call
+      // Submit to your external API
       const response = await axios.get(
         `https://api.desigamblers.top/api/submit/${formData.username}`,
-        {
-          headers: { "Access-Control-Allow-Origin": "*" },
-        }
+        { headers: { "Access-Control-Allow-Origin": "*" } }
       );
 
-      toast(`${response.data}`, {
-        position: "bottom-right",
-        autoClose: 5000,
-        theme: "dark",
+      toast(response.data, { theme: "dark" });
+
+      // Store in Firebase
+      await setDoc(doc(db, "claims", discordUser.id), {
+        discordId: discordUser.id,
+        discordUsername: discordUser.username,
+        customUsername: formData.username,
+        underDesi: formData.underDesi,
+        wagered: formData.wagered,
+        timestamp: serverTimestamp(),
       });
 
-      let registeredUsers = getStoredUsers();
-      registeredUsers[formData.username] = true;
-      saveStoredUsers(registeredUsers);
-      markUserAsRegistered();
-
+      markUserAsRegistered(discordUser.id, formData.username);
+      setIsSubmitted(true);
       onRequestClose();
     } catch (error) {
-      console.error("Submission Error:", error);
-      toast("Error submitting claim profile", {
-        position: "bottom-right",
-        autoClose: 5000,
-        theme: "dark",
-      });
+      console.error("Error submitting:", error);
+      toast("Error submitting claim profile", { theme: "dark" });
       setFormError("Error submitting claim profile");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,16 +155,29 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                 backgroundImage:
                   'url("https://api.desigamblers.top/cdn/standard.gif")',
                 backgroundSize: "cover",
+                backgroundPosition: "center",
                 height: "150px",
               }}
             />
             <div
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                cursor: "pointer",
+              }}
               onClick={onRequestClose}
-              style={{ position: "absolute", top: "10px", right: "10px", cursor: "pointer" }}
             >
               <Close style={{ color: "white" }} />
             </div>
-            <div style={{ padding: "20px", marginTop: "-70px", zIndex: 1 }}>
+            <div
+              style={{
+                padding: "20px",
+                marginTop: "-70px",
+                zIndex: 1,
+                position: "relative",
+              }}
+            >
               <div
                 style={{
                   transition: "opacity 0.5s ease, transform 0.5s ease",
@@ -173,7 +188,6 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                 <div style={{ textAlign: "center" }}>
                   <h1 className="text-transparent">‎</h1>
 
-                  {/* Username Input */}
                   <div style={{ marginBottom: "10px", textAlign: "left" }}>
                     <h4>Username</h4>
                     <input
@@ -182,23 +196,31 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                       value={formData.username}
                       onChange={handleUsernameChange}
                       style={{
-                        backgroundColor: "#000000",
+                        backgroundColor: "#000",
                         padding: "5px 10px",
                         borderRadius: "10px",
                         color: "white",
                         width: "100%",
-                        textAlign: "center",
                         border: "none",
-                        outline: "none",
+                        textAlign: "center",
                       }}
                       placeholder="Enter your username"
                     />
                   </div>
 
-                  {/* Under Desi */}
                   <div style={{ marginBottom: "10px", textAlign: "left" }}>
                     <h4>Are you under "desi2023"?</h4>
-                    <label style={checkboxStyle}>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        backgroundColor: "#000",
+                        padding: "5px 10px",
+                        borderRadius: "10px",
+                        color: "white",
+                      }}
+                    >
                       <input
                         type="checkbox"
                         name="underDesi"
@@ -210,10 +232,19 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                     </label>
                   </div>
 
-                  {/* Wagered */}
                   <div style={{ marginBottom: "10px", textAlign: "left" }}>
                     <h4>Have you deposited and wagered $100?</h4>
-                    <label style={checkboxStyle}>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        backgroundColor: "#000",
+                        padding: "5px 10px",
+                        borderRadius: "10px",
+                        color: "white",
+                      }}
+                    >
                       <input
                         type="checkbox"
                         name="wagered"
@@ -225,18 +256,31 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
                     </label>
                   </div>
 
-                  {/* Error + Submit */}
                   {formError && (
                     <p style={{ color: "red", textAlign: "center" }}>
                       {formError}
                     </p>
                   )}
-                  <button
-                    onClick={handleSubmit}
-                    style={submitButtonStyle}
-                  >
-                    Submit
-                  </button>
+
+                  {!isSubmitted && (
+                    <button
+                      onClick={handleSubmit}
+                      disabled={loading}
+                      style={{
+                        background: "#166D3B",
+                        color: "white",
+                        padding: "10px 20px",
+                        borderRadius: "10px",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        marginTop: "10px",
+                        opacity: loading ? 0.6 : 1,
+                      }}
+                    >
+                      {loading ? "Submitting..." : "Submit"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -245,28 +289,6 @@ const ProfileModal = ({ isOpen, onRequestClose }) => {
       </div>
     </>
   );
-};
-
-const checkboxStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  backgroundColor: "#000000",
-  padding: "5px 10px",
-  borderRadius: "10px",
-  color: "white",
-};
-
-const submitButtonStyle = {
-  background: "#166D3B",
-  color: "white",
-  padding: "10px 20px",
-  borderRadius: "10px",
-  border: "none",
-  cursor: "pointer",
-  fontSize: "14px",
-  marginTop: "10px",
-  transition: "background 0.3s ease",
 };
 
 export default ProfileModal;
