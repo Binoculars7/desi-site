@@ -19,7 +19,10 @@ const LeaderboardCard = ({ month, prize, onView }) => (
 
 const Dashboard = () => {
   const [monthlyData, setMonthlyData] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
+
+  const togglePopup = () => setShowPopup(!showPopup);
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
@@ -27,11 +30,11 @@ const Dashboard = () => {
       const monthlyMap = {};
 
       querySnapshot.forEach((doc) => {
-        const { month, prize } = doc.data(); // month = "03-2025" or "3-2025"
+        const { month, prize } = doc.data();
         if (!month || !prize) return;
 
         const [rawMonth, rawYear] = month.split("-");
-        const mm = rawMonth.padStart(2, "0"); // Ensure month is 2 digits
+        const mm = rawMonth.padStart(2, "0");
         const key = `${mm}`;
 
         if (!monthlyMap[key]) {
@@ -50,8 +53,8 @@ const Dashboard = () => {
         const monthIndex = parseInt(mm, 10) - 1;
         const formattedMonth = `${monthNames[monthIndex]}`;
         return {
-          monthKey, // For navigation
-          month: formattedMonth, // For display
+          monthKey,
+          month: formattedMonth,
           prize: totalPrize,
         };
       });
@@ -71,7 +74,7 @@ const Dashboard = () => {
           <span style={styles.partner}>Stake</span>
         </div>
         <h1 style={styles.title}>LEADERBOARD</h1>
-        <button style={styles.howItWorks}>How it works</button>
+        <button style={styles.howItWorks} onClick={togglePopup}>How it works</button>
       </div>
 
       <div style={styles.section}>
@@ -88,6 +91,34 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
+
+      {showPopup && (
+        <div style={styles.popupOverlay} onClick={togglePopup}>
+          <div style={styles.popupContent} onClick={(e) => e.stopPropagation()}>
+            <button style={styles.popupClose} onClick={togglePopup}>X</button>
+            <h2 style={{ marginBottom: '1rem' }}>HOW OUR RAFFLES WORK?</h2>
+            <h3>WHAT IS A RAFFLE?</h3>
+            <p>
+              Raffles are similar to lotteries where you have a chance to win exciting prizes.
+              At the end of the raffle period, a winning ticket is drawn at random. The more tickets
+              you have, the better your chances of winning.
+            </p><br/>
+            <h3>HOW TO PARTICIPATE?</h3>
+            <p>
+              You can join three different kinds of raffles:
+              <br />
+              <strong>Free Raffles:</strong> Enter certain raffles without any cost.
+              <br />
+              <strong>Coins Raffles:</strong> Claim coins from our daily claimer to join these raffles.
+            </p><br/>
+            <h3>PROVABLY FAIR</h3>
+            <p>
+              Our raffles are provably fair, ensuring transparency and trust. We use an external
+              randomizer resource to guarantee fair and unbiased results.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -114,7 +145,7 @@ const styles = {
     marginBottom: "10px",
   },
   logo: {
-    color: "#FFD700",
+    color: "#00f2fe",
   },
   x: {
     color: "#aaa",
@@ -128,7 +159,7 @@ const styles = {
     letterSpacing: "1px",
   },
   howItWorks: {
-    backgroundColor: "#FFD700",
+    backgroundColor: "#00f2fe",
     color: "#000",
     fontWeight: "bold",
     fontSize: "16px",
@@ -205,6 +236,41 @@ const styles = {
     cursor: "pointer",
     border: "1px solid #00f2fe",
     transition: "all 0.3s",
+  },
+  popupOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  popupContent: {
+    background: "#12192F",
+    color: "#fff",
+    padding: "2rem",
+    borderRadius: "15px",
+    maxWidth: "600px",
+    width: "90%",
+    fontFamily: "'Orbitron', sans-serif",
+    position: "relative",
+    boxShadow: "0 0 15px rgba(255, 255, 255, 0.2)",
+    overflowY: "auto",
+    maxHeight: "80vh",
+  },
+  popupClose: {
+    position: "absolute",
+    top: "10px",
+    right: "15px",
+    background: "transparent",
+    color: "#fff",
+    fontSize: "18px",
+    border: "none",
+    cursor: "pointer",
   },
 };
 
