@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
 
 const LeaderboardCard = ({ month, prize, onView }) => (
   <div style={styles.card}>
@@ -15,6 +18,50 @@ const LeaderboardCard = ({ month, prize, onView }) => (
 );
 
 const Dashboard = () => {
+  const [monthlyData, setMonthlyData] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLeaderboardData = async () => {
+      const querySnapshot = await getDocs(collection(db, "leaderboards"));
+      const monthlyMap = {};
+
+      querySnapshot.forEach((doc) => {
+        const { month, prize } = doc.data(); // month = "03-2025" or "3-2025"
+        if (!month || !prize) return;
+
+        const [rawMonth, rawYear] = month.split("-");
+        const mm = rawMonth.padStart(2, "0"); // Ensure month is 2 digits
+        const key = `${mm}`;
+
+        if (!monthlyMap[key]) {
+          monthlyMap[key] = 0;
+        }
+        monthlyMap[key] += prize;
+      });
+
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+
+      const data = Object.entries(monthlyMap).map(([monthKey, totalPrize]) => {
+        const [mm, yyyy] = monthKey.split("-");
+        const monthIndex = parseInt(mm, 10) - 1;
+        const formattedMonth = `${monthNames[monthIndex]}`;
+        return {
+          monthKey, // For navigation
+          month: formattedMonth, // For display
+          prize: totalPrize,
+        };
+      });
+
+      setMonthlyData(data);
+    };
+
+    fetchLeaderboardData();
+  }, []);
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -31,16 +78,14 @@ const Dashboard = () => {
         <h2 style={styles.subTitle}>LEADERBOARD</h2>
         <h3 style={styles.history}>HISTORY</h3>
         <div style={styles.cardsContainer}>
-          <LeaderboardCard
-            month="February-2025"
-            prize={1500000}
-            onView={() => alert("Viewing February leaderboard")}
-          />
-          <LeaderboardCard
-            month="March-2025"
-            prize={2000000}
-            onView={() => alert("Viewing March leaderboard")}
-          />
+          {monthlyData.map((entry) => (
+            <LeaderboardCard
+              key={entry.monthKey}
+              month={entry.month}
+              prize={entry.prize}
+              onView={() => navigate(`/leaderboard/${entry.monthKey}`)}
+            />
+          ))}
         </div>
       </div>
     </div>

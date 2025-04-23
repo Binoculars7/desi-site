@@ -20,6 +20,7 @@ import DisclaimerModal from "./components/DisclaimerModal";
 import styles from "./style";
 import AdminPanel from "./components/AdminPanel";
 import LeaderBoard from "./components/LeaderBoard";
+import LeaderboardMonth from "./components/LeaderboardMonth";
 
 
 import DiscordCallback from "./components/DiscordCallback"; 
@@ -44,6 +45,8 @@ const App = () => {
 
 
         <Route path="/auth/discord/callback" element={<DiscordCallback />} />
+
+        <Route path="/leaderboard/:month" element={<LeaderboardMonth />} />
 
 
         <Route path="/adminonly" element={<AdminPanel />} />
